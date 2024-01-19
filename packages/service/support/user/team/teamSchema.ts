@@ -29,10 +29,19 @@ const TeamSchema = new Schema({
   maxSize: {
     type: Number,
     default: 5
+  },
+  limit: {
+    lastExportDatasetTime: {
+      type: Date
+    },
+    lastWebsiteSyncTime: {
+      type: Date
+    }
   }
 });
 
 try {
+  TeamSchema.index({ lastDatasetBillTime: -1 });
 } catch (error) {
   console.log(error);
 }

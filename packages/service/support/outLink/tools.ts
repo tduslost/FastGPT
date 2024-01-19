@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { MongoOutLink } from './schema';
+import { FastGPTProUrl } from '../../common/system/constants';
 
 export const updateOutLinkUsage = async ({
   shareId,
@@ -8,17 +9,15 @@ export const updateOutLinkUsage = async ({
   shareId: string;
   total: number;
 }) => {
-  try {
-    await MongoOutLink.findOneAndUpdate(
-      { shareId },
-      {
-        $inc: { total },
-        lastTime: new Date()
-      }
-    );
-  } catch (err) {
+  MongoOutLink.findOneAndUpdate(
+    { shareId },
+    {
+      $inc: { total },
+      lastTime: new Date()
+    }
+  ).catch((err) => {
     console.log('update shareChat error', err);
-  }
+  });
 };
 
 export const pushResult2Remote = async ({
@@ -30,7 +29,7 @@ export const pushResult2Remote = async ({
   shareId?: string;
   responseData?: any[];
 }) => {
-  if (!shareId || !outLinkUid || !global.systemEnv?.pluginBaseUrl) return;
+  if (!shareId || !outLinkUid || !FastGPTProUrl) return;
   try {
     const outLink = await MongoOutLink.findOne({
       shareId

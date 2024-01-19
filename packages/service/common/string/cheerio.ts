@@ -15,7 +15,8 @@ export const cheerioToHtml = ({
   // get origin url
   const originUrl = new URL(fetchUrl).origin;
 
-  const selectDom = $(selector || 'body');
+  const usedSelector = selector || 'body';
+  const selectDom = $(usedSelector);
 
   // remove i element
   selectDom.find('i,script').remove();
@@ -49,7 +50,13 @@ export const cheerioToHtml = ({
     .get()
     .join('\n');
 
-  return html;
+  const title = $('head title').text() || $('h1:first').text() || fetchUrl;
+
+  return {
+    html,
+    title,
+    usedSelector
+  };
 };
 export const urlsFetch = async ({
   urlList,
@@ -66,25 +73,27 @@ export const urlsFetch = async ({
           });
 
           const $ = cheerio.load(fetchRes.data);
-
-          const md = await htmlToMarkdown(
-            cheerioToHtml({
-              fetchUrl: url,
-              $,
-              selector
-            })
-          );
+          const { title, html, usedSelector } = cheerioToHtml({
+            fetchUrl: url,
+            $,
+            selector
+          });
+          const md = await htmlToMarkdown(html);
 
           return {
             url,
-            content: md
+            title,
+            content: md,
+            selector: usedSelector
           };
         } catch (error) {
           console.log(error, 'fetch error');
 
           return {
             url,
-            content: ''
+            title: '',
+            content: '',
+            selector: ''
           };
         }
       })

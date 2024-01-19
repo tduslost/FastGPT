@@ -22,6 +22,7 @@ export type ChatSchema = {
   shareId?: string;
   outLinkUid?: string;
   content: ChatItemType[];
+  metadata?: Record<string, any>;
 };
 
 export type ChatWithAppSchema = Omit<ChatSchema, 'appId'> & {
@@ -89,10 +90,12 @@ export type moduleDispatchResType = {
   moduleLogo?: string;
   price?: number;
   runningTime?: number;
-  tokens?: number;
+  inputTokens?: number;
+  outputTokens?: number;
   model?: string;
   query?: string;
   contextTotalLen?: number;
+  textOutput?: string;
 
   // chat
   temperature?: number;
@@ -104,6 +107,7 @@ export type moduleDispatchResType = {
   similarity?: number;
   limit?: number;
   searchMode?: `${DatasetSearchModeEnum}`;
+  searchUsingReRank?: boolean;
 
   // cq
   cqList?: ClassifyQuestionAgentItemType[];
@@ -119,12 +123,13 @@ export type moduleDispatchResType = {
 
   // plugin output
   pluginOutput?: Record<string, any>;
-
-  // text editor
-  textOutput?: string;
+  pluginDetail?: ChatHistoryItemResType[];
 
   // tf switch
   tfSwitchResult?: boolean;
+
+  // abandon
+  tokens?: number;
 };
 
 export type ChatHistoryItemResType = moduleDispatchResType & {

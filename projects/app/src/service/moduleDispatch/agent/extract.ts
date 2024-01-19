@@ -5,17 +5,20 @@ import { ChatRoleEnum } from '@fastgpt/global/core/chat/constants';
 import { getAIApi } from '@fastgpt/service/core/ai/config';
 import type { ContextExtractAgentItemType } from '@fastgpt/global/core/module/type';
 import { ModuleInputKeyEnum, ModuleOutputKeyEnum } from '@fastgpt/global/core/module/constants';
-import type { ModuleDispatchProps } from '@/types/core/chat/type';
+import type { ModuleDispatchProps } from '@fastgpt/global/core/module/type.d';
 import { Prompt_ExtractJson } from '@/global/core/prompt/agent';
 import { replaceVariable } from '@fastgpt/global/common/string/tools';
 import { FunctionModelItemType } from '@fastgpt/global/core/ai/model.d';
 import { getHistories } from '../utils';
+import { ModelTypeEnum, getExtractModel } from '@/service/core/ai/model';
+import { formatModelPrice2Store } from '@/service/support/wallet/bill/utils';
 
 type Props = ModuleDispatchProps<{
   [ModuleInputKeyEnum.history]?: ChatItemType[];
   [ModuleInputKeyEnum.contextExtractInput]: string;
   [ModuleInputKeyEnum.extractKeys]: ContextExtractAgentItemType[];
   [ModuleInputKeyEnum.description]: string;
+  [ModuleInputKeyEnum.aiModel]: string;
 }>;
 type Response = {
   [ModuleOutputKeyEnum.success]?: boolean;
@@ -30,19 +33,19 @@ export async function dispatchContentExtract(props: Props): Promise<Response> {
   const {
     user,
     histories,
-    inputs: { content, history = 6, description, extractKeys }
+    inputs: { content, history = 6, model, description, extractKeys }
   } = props;
 
   if (!content) {
     return Promise.reject('Input is empty');
   }
 
-  const extractModel = global.extractModels[0];
+  const extractModel = getExtractModel(model);
   const chatHistories = getHistories(history, histories);
 
-  const { arg, tokens, rawResponse } = await (async () => {
-    if (extractModel.functionCall) {
-      return functionCall({
+  const { arg, inputTokens, outputTokens } = await (async () => {
+    if (extractModel.toolChoice) {
+      return toolChoice({
         ...props,
         histories: chatHistories,
         extractModel
@@ -60,6 +63,9 @@ export async function dispatchContentExtract(props: Props): Promise<Response> {
     if (!extractKeys.find((item) => item.key === key)) {
       delete arg[key];
     }
+    if (arg[key] === '') {
+      delete arg[key];
+    }
   }
 
   // auth fields
@@ -74,16 +80,24 @@ export async function dispatchContentExtract(props: Props): Promise<Response> {
     }
   }
 
+  const { total, modelName } = formatModelPrice2Store({
+    model: extractModel.model,
+    inputLen: inputTokens,
+    outputLen: outputTokens,
+    type: ModelTypeEnum.extract
+  });
+
   return {
     [ModuleOutputKeyEnum.success]: success ? true : undefined,
     [ModuleOutputKeyEnum.failed]: success ? undefined : true,
     [ModuleOutputKeyEnum.contextExtractFields]: JSON.stringify(arg),
     ...arg,
     [ModuleOutputKeyEnum.responseData]: {
-      price: user.openaiAccount?.key ? 0 : extractModel.price * tokens,
-      model: extractModel.name || '',
+      price: user.openaiAccount?.key ? 0 : total,
+      model: modelName,
       query: content,
-      tokens,
+      inputTokens,
+      outputTokens,
       extractDescription: description,
       extractResult: arg,
       contextTotalLen: chatHistories.length + 2
@@ -91,7 +105,7 @@ export async function dispatchContentExtract(props: Props): Promise<Response> {
   };
 }
 
-async function functionCall({
+async function toolChoice({
   extractModel,
   user,
   histories,
@@ -101,17 +115,19 @@ async function functionCall({
     ...histories,
     {
       obj: ChatRoleEnum.Human,
-      value: `<任务描述>
+      value: `你的任务：
+"""
 ${description || '根据用户要求获取适当的 JSON 字符串。'}
+"""
 
+要求：
+"""
 - 如果字段为空，你返回空字符串。
-- 不要换行。
-- 结合历史记录和文本进行获取。
-</任务描述>
+- 字符串不要换行。
+- 结合上下文和当前问题进行获取。
+"""
 
-<文本>
-${content}
-</文本>`
+当前问题: "${content}"`
     }
   ];
   const filterMessages = ChatContextFilter({
@@ -174,10 +190,10 @@ ${content}
     }
   })();
 
-  const tokens = response.usage?.total_tokens || 0;
   return {
     rawResponse: response?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments || '',
-    tokens,
+    inputTokens: response.usage?.prompt_tokens || 0,
+    outputTokens: response.usage?.completion_tokens || 0,
     arg
   };
 }
@@ -216,7 +232,8 @@ Human: ${content}`
     stream: false
   });
   const answer = data.choices?.[0].message?.content || '';
-  const totalTokens = data.usage?.total_tokens || 0;
+  const inputTokens = data.usage?.prompt_tokens || 0;
+  const outputTokens = data.usage?.completion_tokens || 0;
 
   // parse response
   const start = answer.indexOf('{');
@@ -225,7 +242,8 @@ Human: ${content}`
   if (start === -1 || end === -1)
     return {
       rawResponse: answer,
-      tokens: totalTokens,
+      inputTokens,
+      outputTokens,
       arg: {}
     };
 
@@ -237,13 +255,15 @@ Human: ${content}`
   try {
     return {
       rawResponse: answer,
-      tokens: totalTokens,
+      inputTokens,
+      outputTokens,
       arg: JSON.parse(jsonStr) as Record<string, any>
     };
   } catch (error) {
     return {
       rawResponse: answer,
-      tokens: totalTokens,
+      inputTokens,
+      outputTokens,
       arg: {}
     };
   }

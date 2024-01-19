@@ -6,7 +6,7 @@ import { useLoading } from '@/web/common/hooks/useLoading';
 import type { UserInformSchema } from '@fastgpt/global/support/user/inform/type';
 import { formatTimeToChatTime } from '@/utils/tools';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
-import MyIcon from '@/components/Icon';
+import MyIcon from '@fastgpt/web/components/common/Icon';
 
 const BillTable = () => {
   const theme = useTheme();
@@ -46,12 +46,12 @@ const BillTable = () => {
             }}
           >
             <Flex alignItems={'center'} justifyContent={'space-between'}>
-              <Box>{item.title}</Box>
+              <Box fontWeight={'bold'}>{item.title}</Box>
               <Box ml={2} color={'myGray.500'}>
                 {formatTimeToChatTime(item.time)}
               </Box>
             </Flex>
-            <Box fontSize={'sm'} color={'myGray.600'}>
+            <Box fontSize={'sm'} color={'myGray.600'} whiteSpace={'pre-wrap'}>
               {item.content}
             </Box>
             {!item.read && (
@@ -59,7 +59,7 @@ const BillTable = () => {
                 w={'5px'}
                 h={'5px'}
                 borderRadius={'10px'}
-                bg={'myRead.600'}
+                bg={'red.600'}
                 position={'absolute'}
                 bottom={'8px'}
                 right={'8px'}

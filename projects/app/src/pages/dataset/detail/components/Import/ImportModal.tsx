@@ -10,10 +10,7 @@ const CsvImport = dynamic(() => import('./Csv'), {});
 import MyModal from '@/components/MyModal';
 import Provider from './Provider';
 import { useDatasetStore } from '@/web/core/dataset/store/dataset';
-import {
-  DatasetCollectionTrainingModeEnum,
-  TrainingModeEnum
-} from '@fastgpt/global/core/dataset/constant';
+import { TrainingModeEnum } from '@fastgpt/global/core/dataset/constant';
 
 export enum ImportTypeEnum {
   chunk = 'chunk',
@@ -44,32 +41,33 @@ const ImportData = ({
       [ImportTypeEnum.chunk]: {
         defaultChunkLen: vectorModel?.defaultToken || 500,
         chunkOverlapRatio: 0.2,
-        unitPrice: vectorModel?.price || 0.2,
-        mode: TrainingModeEnum.chunk,
-        collectionTrainingType: DatasetCollectionTrainingModeEnum.chunk
+        inputPrice: vectorModel?.inputPrice || 0,
+        outputPrice: 0,
+        collectionTrainingType: TrainingModeEnum.chunk
       },
       [ImportTypeEnum.qa]: {
         defaultChunkLen: agentModel?.maxContext * 0.55 || 8000,
         chunkOverlapRatio: 0,
-        unitPrice: agentModel?.price || 3,
-        mode: TrainingModeEnum.qa,
-        collectionTrainingType: DatasetCollectionTrainingModeEnum.qa
+        inputPrice: agentModel?.inputPrice || 0,
+        outputPrice: agentModel?.outputPrice || 0,
+        collectionTrainingType: TrainingModeEnum.qa
       },
       [ImportTypeEnum.csv]: {
         defaultChunkLen: 0,
         chunkOverlapRatio: 0,
-        unitPrice: vectorModel?.price || 0.2,
-        mode: TrainingModeEnum.chunk,
-        collectionTrainingType: DatasetCollectionTrainingModeEnum.manual
+        inputPrice: vectorModel?.inputPrice || 0,
+        outputPrice: 0,
+        collectionTrainingType: TrainingModeEnum.chunk
       }
     };
     return map[importType];
   }, [
+    agentModel?.inputPrice,
     agentModel?.maxContext,
-    agentModel?.price,
+    agentModel?.outputPrice,
     importType,
     vectorModel?.defaultToken,
-    vectorModel?.price
+    vectorModel?.inputPrice
   ]);
 
   const TitleStyle: BoxProps = {
@@ -94,19 +92,19 @@ const ImportData = ({
             gridTemplateColumns={['repeat(1,1fr)', 'repeat(3,1fr)']}
             list={[
               {
-                icon: 'indexImport',
+                icon: 'file/indexImport',
                 title: t('core.dataset.import.Chunk Split'),
                 desc: t('core.dataset.import.Chunk Split Tip'),
                 value: ImportTypeEnum.chunk
               },
               {
-                icon: 'qaImport',
+                icon: 'file/qaImport',
                 title: t('core.dataset.import.QA Import'),
                 desc: t('core.dataset.import.QA Import Tip'),
                 value: ImportTypeEnum.qa
               },
               {
-                icon: 'csvImport',
+                icon: 'file/csv',
                 title: t('core.dataset.import.CSV Import'),
                 desc: t('core.dataset.import.CSV Import Tip'),
                 value: ImportTypeEnum.csv

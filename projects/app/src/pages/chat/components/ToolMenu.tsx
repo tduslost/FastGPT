@@ -2,18 +2,20 @@ import React, { useMemo } from 'react';
 import { useChatBox } from '@/components/ChatBox';
 import type { ChatItemType } from '@fastgpt/global/core/chat/type.d';
 import { Menu, MenuButton, MenuList, MenuItem, Box } from '@chakra-ui/react';
-import MyIcon from '@/components/Icon';
+import { useTranslation } from 'next-i18next';
+import MyIcon from '@fastgpt/web/components/common/Icon';
 import { useRouter } from 'next/router';
 
 const ToolMenu = ({ history }: { history: ChatItemType[] }) => {
+  const { t } = useTranslation();
   const { onExportChat } = useChatBox();
   const router = useRouter();
 
   const menuList = useMemo(
     () => [
       {
-        icon: 'chat',
-        label: '新对话',
+        icon: 'core/chat/chatLight',
+        label: t('core.chat.New Chat'),
         onClick: () => {
           router.replace({
             query: {
@@ -24,16 +26,20 @@ const ToolMenu = ({ history }: { history: ChatItemType[] }) => {
         }
       },
       {
-        icon: 'apiLight',
-        label: 'HTML导出',
+        icon: 'core/app/appApiLight',
+        label: `HTML ${t('Export')}`,
         onClick: () => onExportChat({ type: 'html', history })
       },
       {
-        icon: 'markdown',
-        label: 'Markdown导出',
+        icon: 'file/markdown',
+        label: `Markdown ${t('Export')}`,
         onClick: () => onExportChat({ type: 'md', history })
       },
-      { icon: 'pdf', label: 'PDF导出', onClick: () => onExportChat({ type: 'pdf', history }) }
+      {
+        icon: 'file/pdf',
+        label: `PDF ${t('Export')}`,
+        onClick: () => onExportChat({ type: 'pdf', history })
+      }
     ],
     [history, onExportChat, router]
   );

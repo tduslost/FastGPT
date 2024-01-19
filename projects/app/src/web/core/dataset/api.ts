@@ -11,7 +11,12 @@ import type {
   DatasetUpdateBody,
   PostWebsiteSyncParams
 } from '@fastgpt/global/core/dataset/api.d';
-import type { SearchTestProps, SearchTestResponse } from '@/global/core/dataset/api.d';
+import type {
+  GetTrainingQueueProps,
+  GetTrainingQueueResponse,
+  SearchTestProps,
+  SearchTestResponse
+} from '@/global/core/dataset/api.d';
 import type {
   PushDatasetDataProps,
   UpdateDatasetDataProps,
@@ -20,7 +25,10 @@ import type {
 } from '@/global/core/dataset/api.d';
 import type { PushDataResponse } from '@/global/core/api/datasetRes.d';
 import type { DatasetCollectionItemType } from '@fastgpt/global/core/dataset/type';
-import { DatasetTypeEnum } from '@fastgpt/global/core/dataset/constant';
+import {
+  DatasetCollectionSyncResultEnum,
+  DatasetTypeEnum
+} from '@fastgpt/global/core/dataset/constant';
 import type { DatasetDataItemType } from '@fastgpt/global/core/dataset/type';
 import type { DatasetCollectionsListItemType } from '@/global/core/dataset/type.d';
 import { PagingData } from '@/types';
@@ -51,9 +59,6 @@ export const postWebsiteSync = (data: PostWebsiteSyncParams) =>
     timeout: 600000
   }).catch();
 
-export const getCheckExportLimit = (datasetId: string) =>
-  GET(`/core/dataset/checkExportLimit`, { datasetId });
-
 /* =========== search test ============ */
 export const postSearchText = (data: SearchTestProps) =>
   POST<SearchTestResponse>(`/core/dataset/searchTest`, data);
@@ -69,18 +74,20 @@ export const postDatasetCollection = (data: CreateDatasetCollectionParams) =>
   POST<string>(`/core/dataset/collection/create`, data);
 export const putDatasetCollectionById = (data: UpdateDatasetCollectionParams) =>
   POST(`/core/dataset/collection/update`, data);
-export const delDatasetCollectionById = (params: { collectionId: string }) =>
+export const delDatasetCollectionById = (params: { id: string }) =>
   DELETE(`/core/dataset/collection/delete`, params);
 export const postLinkCollectionSync = (collectionId: string) =>
-  POST(`/core/dataset/collection/sync/link`, { collectionId });
+  POST<`${DatasetCollectionSyncResultEnum}`>(`/core/dataset/collection/sync/link`, {
+    collectionId
+  });
 
 /* =============================== data ==================================== */
 /* get dataset list */
 export const getDatasetDataList = (data: GetDatasetDataListProps) =>
   POST(`/core/dataset/data/list`, data);
 
-export const getDatasetDataItemById = (dataId: string) =>
-  GET<DatasetDataItemType>(`/core/dataset/data/detail`, { dataId });
+export const getDatasetDataItemById = (id: string) =>
+  GET<DatasetDataItemType>(`/core/dataset/data/detail`, { id });
 
 /**
  * push data to training queue
@@ -102,12 +109,13 @@ export const putDatasetDataById = (data: UpdateDatasetDataProps) =>
 /**
  * 删除一条知识库数据
  */
-export const delOneDatasetDataById = (dataId: string) =>
-  DELETE<string>(`/core/dataset/data/delete`, { dataId });
+export const delOneDatasetDataById = (id: string) =>
+  DELETE<string>(`/core/dataset/data/delete`, { id });
 
 /* ================ training ==================== */
 /* get length of system training queue */
-export const getTrainingQueueLen = () => GET<number>(`/core/dataset/training/getQueueLen`);
+export const getTrainingQueueLen = (data: GetTrainingQueueProps) =>
+  GET<GetTrainingQueueResponse>(`/core/dataset/training/getQueueLen`, data);
 
 /* ================== file ======================== */
 export const getFileViewUrl = (fileId: string) =>

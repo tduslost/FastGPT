@@ -9,12 +9,16 @@ const FeedbackModal = ({
   appId,
   chatId,
   chatItemId,
+  shareId,
+  outLinkUid,
   onSuccess,
   onClose
 }: {
   appId: string;
   chatId: string;
   chatItemId: string;
+  shareId?: string;
+  outLinkUid?: string;
   onSuccess: (e: string) => void;
   onClose: () => void;
 }) => {
@@ -28,14 +32,16 @@ const FeedbackModal = ({
         appId,
         chatId,
         chatItemId,
+        shareId,
+        outLinkUid,
         userBadFeedback: val
       });
     },
     onSuccess() {
       onSuccess(ref.current?.value || t('core.chat.feedback.No Content'));
     },
-    successToast: t('chat.Feedback Success'),
-    errorToast: t('chat.Feedback Failed')
+    successToast: t('core.chat.Feedback Success'),
+    errorToast: t('core.chat.Feedback Failed')
   });
 
   return (
@@ -43,17 +49,17 @@ const FeedbackModal = ({
       isOpen={true}
       onClose={onClose}
       iconSrc="/imgs/modal/badAnswer.svg"
-      title={t('chat.Feedback Modal')}
+      title={t('core.chat.Feedback Modal')}
     >
       <ModalBody>
-        <Textarea ref={ref} rows={10} placeholder={t('chat.Feedback Modal Tip')} />
+        <Textarea ref={ref} rows={10} placeholder={t('core.chat.Feedback Modal Tip')} />
       </ModalBody>
       <ModalFooter>
-        <Button variant={'base'} mr={2} onClick={onClose}>
+        <Button variant={'whiteBase'} mr={2} onClick={onClose}>
           {t('Cancel')}
         </Button>
         <Button isLoading={isLoading} onClick={mutate}>
-          {t('chat.Feedback Submit')}
+          {t('core.chat.Feedback Submit')}
         </Button>
       </ModalFooter>
     </MyModal>

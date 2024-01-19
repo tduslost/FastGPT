@@ -11,7 +11,7 @@ import { UpdateDatasetDataProps } from '@/global/core/dataset/api';
 export default withNextCors(async function handler(req: NextApiRequest, res: NextApiResponse<any>) {
   try {
     await connectToDatabase();
-    const { id, q = '', a, indexes } = req.body as UpdateDatasetDataProps;
+    const { id, q = '', a, indexes = [] } = req.body as UpdateDatasetDataProps;
 
     // auth data permission
     const {
@@ -23,6 +23,7 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
     } = await authDatasetData({
       req,
       authToken: true,
+      authApiKey: true,
       dataId: id,
       per: 'w'
     });
@@ -30,7 +31,7 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
     // auth team balance
     await authTeamBalance(teamId);
 
-    const { tokenLen } = await updateData2Dataset({
+    const { tokens } = await updateData2Dataset({
       dataId: id,
       q,
       a,
@@ -38,14 +39,12 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
       model: vectorModel
     });
 
-    if (tokenLen) {
-      pushGenerateVectorBill({
-        teamId,
-        tmbId,
-        tokenLen: tokenLen,
-        model: vectorModel
-      });
-    }
+    pushGenerateVectorBill({
+      teamId,
+      tmbId,
+      tokens,
+      model: vectorModel
+    });
 
     jsonRes(res);
   } catch (err) {

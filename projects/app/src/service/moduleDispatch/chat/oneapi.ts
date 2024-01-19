@@ -6,7 +6,7 @@ import { sseResponseEventEnum } from '@fastgpt/service/common/response/constant'
 import { textAdaptGptResponse } from '@/utils/adapt';
 import { getAIApi } from '@fastgpt/service/core/ai/config';
 import type { ChatCompletion, StreamChatType } from '@fastgpt/global/core/ai/type.d';
-import { countModelPrice } from '@/service/support/wallet/bill/utils';
+import { formatModelPrice2Store } from '@/service/support/wallet/bill/utils';
 import type { ChatModelItemType } from '@fastgpt/global/core/ai/model.d';
 import { postTextCensor } from '@/service/common/censor';
 import { ChatCompletionRequestMessageRoleEnum } from '@fastgpt/global/core/ai/constant';
@@ -16,7 +16,7 @@ import { adaptChat2GptMessages } from '@fastgpt/global/core/chat/adapt';
 import { Prompt_QuotePromptList, Prompt_QuoteTemplateList } from '@/global/core/prompt/AIChat';
 import type { AIChatModuleProps } from '@fastgpt/global/core/module/node/type.d';
 import { replaceVariable } from '@fastgpt/global/common/string/tools';
-import type { ModuleDispatchProps } from '@/types/core/chat/type';
+import type { ModuleDispatchProps } from '@fastgpt/global/core/module/type.d';
 import { responseWrite, responseWriteController } from '@fastgpt/service/common/response';
 import { getChatModel, ModelTypeEnum } from '@/service/core/ai/model';
 import type { SearchDataResponseItemType } from '@fastgpt/global/core/dataset/type';
@@ -138,6 +138,9 @@ export const dispatchChatCompletion = async (props: ChatProps): Promise<ChatResp
       temperature,
       max_tokens,
       stream,
+      presence_penalty: 0,
+      frequency_penalty: 0,
+      top_p: 1,
       // seed: temperature < 0.3 ? 1 : undefined,
       messages: concatMessages
     },
@@ -148,7 +151,7 @@ export const dispatchChatCompletion = async (props: ChatProps): Promise<ChatResp
     }
   );
 
-  const { answerText, totalTokens, completeMessages } = await (async () => {
+  const { answerText, inputTokens, outputTokens, completeMessages } = await (async () => {
     if (stream) {
       // sse response
       const { answer } = await streamResponse({
@@ -162,21 +165,26 @@ export const dispatchChatCompletion = async (props: ChatProps): Promise<ChatResp
         value: answer
       });
 
-      const totalTokens = countMessagesTokens({
-        messages: completeMessages
-      });
-
       targetResponse({ res, detail, outputs });
 
       return {
         answerText: answer,
-        totalTokens,
+        inputTokens: countMessagesTokens({
+          messages: filterMessages
+        }),
+        outputTokens: countMessagesTokens({
+          messages: [
+            {
+              obj: ChatRoleEnum.AI,
+              value: answer
+            }
+          ]
+        }),
         completeMessages
       };
     } else {
       const unStreamResponse = response as ChatCompletion;
       const answer = unStreamResponse.choices?.[0]?.message?.content || '';
-      const totalTokens = unStreamResponse.usage?.total_tokens || 0;
 
       const completeMessages = filterMessages.concat({
         obj: ChatRoleEnum.AI,
@@ -185,21 +193,28 @@ export const dispatchChatCompletion = async (props: ChatProps): Promise<ChatResp
 
       return {
         answerText: answer,
-        totalTokens,
+        inputTokens: unStreamResponse.usage?.prompt_tokens || 0,
+        outputTokens: unStreamResponse.usage?.completion_tokens || 0,
         completeMessages
       };
     }
   })();
 
+  const { total, modelName } = formatModelPrice2Store({
+    model,
+    inputLen: inputTokens,
+    outputLen: outputTokens,
+    type: ModelTypeEnum.chat
+  });
+
   return {
     answerText,
     responseData: {
-      price: user.openaiAccount?.key
-        ? 0
-        : countModelPrice({ model, tokens: totalTokens, type: ModelTypeEnum.chat }),
-      model: modelConstantsData.name,
-      tokens: totalTokens,
-      query: userChatInput,
+      price: user.openaiAccount?.key ? 0 : total,
+      model: modelName,
+      inputTokens,
+      outputTokens,
+      query: `${userChatInput}`,
       maxToken: max_tokens,
       quoteList: filterQuoteQA,
       historyPreview: getHistoryPreview(completeMessages),
@@ -224,8 +239,7 @@ function filterQuote({
       a: item.a,
       source: item.sourceName,
       sourceId: String(item.sourceId || 'UnKnow'),
-      index: index + 1,
-      score: item.score?.toFixed(4)
+      index: index + 1
     });
   }
 
@@ -233,7 +247,7 @@ function filterQuote({
     maxTokens: model.quoteMaxToken,
     messages: quoteQA.map((item, index) => ({
       obj: ChatRoleEnum.System,
-      value: getValue(item, index)
+      value: getValue(item, index).trim()
     }))
   });
 
@@ -258,8 +272,8 @@ function filterQuote({
   });
 
   const quoteText =
-    filterQuoteQA.length > 0
-      ? `${filterQuoteQA.map((item, index) => getValue(item, index)).join('\n')}`
+    sortQuoteQAList.length > 0
+      ? `${sortQuoteQAList.map((item, index) => getValue(item, index)).join('\n')}`
       : '';
 
   return {
@@ -393,7 +407,7 @@ async function streamResponse({
   }
 
   if (!answer) {
-    return Promise.reject('Chat API is error or undefined');
+    return Promise.reject('core.chat API is error or undefined');
   }
 
   return { answer };

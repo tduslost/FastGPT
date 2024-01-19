@@ -7,7 +7,10 @@ export enum FlowNodeInputTypeEnum {
   slider = 'slider',
   target = 'target', // data input
   switch = 'switch',
+
+  // editor
   textarea = 'textarea',
+  JSONEditor = 'JSONEditor',
 
   addInputParam = 'addInputParam', // params input
 
@@ -38,7 +41,6 @@ export enum FlowNodeOutputTypeEnum {
 }
 
 export enum FlowNodeTypeEnum {
-  empty = 'empty',
   userGuide = 'userGuide',
   questionInput = 'questionInput',
   historyNode = 'historyNode',
@@ -52,10 +54,10 @@ export enum FlowNodeTypeEnum {
   pluginModule = 'pluginModule',
   pluginInput = 'pluginInput',
   pluginOutput = 'pluginOutput',
-  textEditor = 'textEditor',
+  cfr = 'cfr',
 
   // abandon
   variable = 'variable'
 }
 
-export const EDGE_TYPE = 'smoothstep';
+export const EDGE_TYPE = 'default';

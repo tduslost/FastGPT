@@ -55,8 +55,8 @@ defaultContentLanguage = 'zh-cn'
     ["JetBrains Mono", "500, 700"]
   ]
 
-  sans_serif_font = "LXGW WenKai Screen"     # Default is System font
-  secondary_font  = "LXGW WenKai Screen"     # Default is System font
+  #sans_serif_font = "LXGW WenKai Screen"     # Default is System font
+  #secondary_font  = "LXGW WenKai Screen"     # Default is System font
   mono_font       = "JetBrains Mono" # Default is System font
 
     [params.footer]
@@ -68,7 +68,7 @@ defaultContentLanguage = 'zh-cn'
         # twitter = ""       # YOUR_TWITTER_ID
         # instagram = "colinwilson"     # YOUR_INSTAGRAM_ID
         # rss = true                    # show rss icon with link
-        wechat = "/wechat-fastgpt.webp"
+        wechat = "https://oss.laf.run/htr4n1-images/fastgpt-qr-code.jpg"
 
     [params.docs] # Parameters for the /docs 'template'
         title           = ""           # default html title for documentation pages/sections

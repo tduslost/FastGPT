@@ -14,9 +14,10 @@ import MyTooltip from '@/components/MyTooltip';
 import MyModal from '@/components/MyModal';
 import { useTranslation } from 'next-i18next';
 import { useConfirm } from '@/web/common/hooks/useConfirm';
-import MyIcon from '@/components/Icon';
+import MyIcon from '@fastgpt/web/components/common/Icon';
 import { CreateOnePluginParams } from '@fastgpt/global/core/plugin/controller';
 import { customAlphabet } from 'nanoid';
+import { MongoImageTypeEnum } from '@fastgpt/global/common/file/image/constants';
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz1234567890', 12);
 
 export type FormType = CreateOnePluginParams & {
@@ -92,6 +93,7 @@ const CreateModal = ({
       if (!file) return;
       try {
         const src = await compressImgFileAndUpload({
+          type: MongoImageTypeEnum.pluginAvatar,
           file,
           maxW: 300,
           maxH: 300
@@ -192,14 +194,13 @@ const CreateModal = ({
         </Box>
       </ModalBody>
 
-      <Flex px={5} py={4}>
+      <Flex px={5} py={4} alignItems={'center'}>
         {!!defaultValue.id && (
           <IconButton
             className="delete"
-            size={'sm'}
+            size={'xsSquare'}
             icon={<MyIcon name={'delete'} w={'14px'} />}
-            variant={'base'}
-            borderRadius={'md'}
+            variant={'whiteDanger'}
             aria-label={'delete'}
             _hover={{
               bg: 'red.100'
@@ -211,7 +212,7 @@ const CreateModal = ({
           />
         )}
         <Box flex={1} />
-        <Button variant={'base'} mr={3} onClick={onClose}>
+        <Button variant={'whiteBase'} mr={3} onClick={onClose}>
           {t('common.Close')}
         </Button>
         {!!defaultValue.id ? (

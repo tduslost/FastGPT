@@ -9,14 +9,8 @@ import { pushGenerateVectorBill } from '@/service/support/wallet/bill/push';
 import { UserErrEnum } from '@fastgpt/global/common/error/code/user';
 import { lockTrainingDataByTeamId } from '@fastgpt/service/core/dataset/training/controller';
 
-const reduceQueue = (retry = false) => {
+const reduceQueue = () => {
   global.vectorQueueLen = global.vectorQueueLen > 0 ? global.vectorQueueLen - 1 : 0;
-
-  if (global.vectorQueueLen === 0 && retry) {
-    setTimeout(() => {
-      generateVector();
-    }, 60000);
-  }
 
   return global.vectorQueueLen === 0;
 };
@@ -25,6 +19,8 @@ const reduceQueue = (retry = false) => {
 export async function generateVector(): Promise<any> {
   if (global.vectorQueueLen >= global.systemEnv.vectorMaxProcess) return;
   global.vectorQueueLen++;
+
+  const start = Date.now();
 
   // get training data
   const {
@@ -43,6 +39,9 @@ export async function generateVector(): Promise<any> {
           lockTime: new Date()
         }
       )
+        .sort({
+          weight: -1
+        })
         .select({
           _id: 1,
           userId: 1,
@@ -126,7 +125,7 @@ export async function generateVector(): Promise<any> {
     }
 
     // insert data to pg
-    const { tokenLen } = await insertData2Dataset({
+    const { tokens } = await insertData2Dataset({
       teamId: data.teamId,
       tmbId: data.tmbId,
       datasetId: data.datasetId,
@@ -137,11 +136,12 @@ export async function generateVector(): Promise<any> {
       indexes: dataItem.indexes,
       model: data.model
     });
+
     // push bill
     pushGenerateVectorBill({
       teamId: data.teamId,
       tmbId: data.tmbId,
-      tokenLen: tokenLen,
+      tokens,
       model: data.model,
       billId: data.billId
     });
@@ -150,8 +150,10 @@ export async function generateVector(): Promise<any> {
     await MongoDatasetTraining.findByIdAndDelete(data._id);
     reduceQueue();
     generateVector();
+
+    console.log(`embedding finished, time: ${Date.now() - start}ms`);
   } catch (err: any) {
-    reduceQueue(true);
+    reduceQueue();
     // log
     if (err?.response) {
       addLog.info('openai error: 生成向量错误', {
@@ -170,9 +172,11 @@ export async function generateVector(): Promise<any> {
       err.response?.data?.error?.type === 'invalid_request_error' ||
       err?.code === 500
     ) {
-      addLog.info('invalid message format', {
-        dataItem
-      });
+      addLog.info('Lock training data');
+      console.log(err?.code);
+      console.log(err.response?.data?.error?.type);
+      console.log(err?.message);
+
       try {
         await MongoDatasetTraining.findByIdAndUpdate(data._id, {
           lockTime: new Date('2998/5/5')

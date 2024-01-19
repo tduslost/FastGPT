@@ -1,10 +1,7 @@
 import { connectionMongo, type Model } from '../../../common/mongo';
 const { Schema, model, models } = connectionMongo;
 import { DatasetCollectionSchemaType } from '@fastgpt/global/core/dataset/type.d';
-import {
-  DatasetCollectionTrainingTypeMap,
-  DatasetCollectionTypeMap
-} from '@fastgpt/global/core/dataset/constant';
+import { TrainingTypeMap, DatasetCollectionTypeMap } from '@fastgpt/global/core/dataset/constant';
 import { DatasetCollectionName } from '../schema';
 import {
   TeamCollectionName,
@@ -56,15 +53,23 @@ const DatasetCollectionSchema = new Schema({
     type: Date,
     default: () => new Date()
   },
+
   trainingType: {
     type: String,
-    enum: Object.keys(DatasetCollectionTrainingTypeMap),
+    enum: Object.keys(TrainingTypeMap),
     required: true
   },
   chunkSize: {
     type: Number,
     required: true
   },
+  chunkSplitter: {
+    type: String
+  },
+  qaPrompt: {
+    type: String
+  },
+
   fileId: {
     type: Schema.Types.ObjectId,
     ref: 'dataset.files'
@@ -72,8 +77,9 @@ const DatasetCollectionSchema = new Schema({
   rawLink: {
     type: String
   },
-  qaPrompt: {
-    type: String
+
+  rawTextLength: {
+    type: Number
   },
   hashRawText: {
     type: String
@@ -85,8 +91,9 @@ const DatasetCollectionSchema = new Schema({
 });
 
 try {
+  DatasetCollectionSchema.index({ teamId: 1 });
   DatasetCollectionSchema.index({ datasetId: 1 });
-  DatasetCollectionSchema.index({ datasetId: 1, parentId: 1 });
+  DatasetCollectionSchema.index({ teamId: 1, datasetId: 1, parentId: 1 });
   DatasetCollectionSchema.index({ updateTime: -1 });
   DatasetCollectionSchema.index({ hashRawText: -1 });
 } catch (error) {

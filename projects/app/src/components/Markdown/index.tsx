@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
-import RemarkGfm from 'remark-gfm';
-import RemarkMath from 'remark-math';
-import RehypeKatex from 'rehype-katex';
-import RemarkBreaks from 'remark-breaks';
-
 import 'katex/dist/katex.min.css';
+import RemarkMath from 'remark-math';
+import RemarkBreaks from 'remark-breaks';
+import RehypeKatex from 'rehype-katex';
+import RemarkGfm from 'remark-gfm';
+
 import styles from './index.module.scss';
 import dynamic from 'next/dynamic';
 
@@ -13,7 +13,7 @@ import { Link, Button } from '@chakra-ui/react';
 import MyTooltip from '../MyTooltip';
 import { useTranslation } from 'next-i18next';
 import { EventNameEnum, eventBus } from '@/web/common/utils/eventbus';
-import MyIcon from '../Icon';
+import MyIcon from '@fastgpt/web/components/common/Icon';
 import { getFileAndOpen } from '@/web/core/dataset/utils';
 import { MARKDOWN_QUOTE_SIGN } from '@fastgpt/global/core/chat/constants';
 
@@ -74,7 +74,7 @@ function A({ children, ...props }: any) {
     return (
       <MyTooltip label={t('core.chat.markdown.Quick Question')}>
         <Button
-          variant={'base'}
+          variant={'whitePrimary'}
           size={'xs'}
           borderRadius={'md'}
           my={1}
@@ -96,10 +96,10 @@ function A({ children, ...props }: any) {
             name={'core/chat/quoteSign'}
             transform={'translateY(-2px)'}
             w={'18px'}
-            color={'blue.500'}
+            color={'primary.500'}
             cursor={'pointer'}
             _hover={{
-              color: 'blue.700'
+              color: 'primary.700'
             }}
             onClick={() => getFileAndOpen(props.href)}
           />
@@ -112,11 +112,11 @@ function A({ children, ...props }: any) {
 }
 
 const Markdown = ({ source, isChatting = false }: { source: string; isChatting?: boolean }) => {
-  const components = useMemo(
+  const components = useMemo<any>(
     () => ({
       img: Image,
       pre: 'div',
-      p: 'div',
+      p: (pProps: any) => <p {...pProps} dir="auto" />,
       code: Code,
       a: A
     }),
@@ -133,9 +133,8 @@ const Markdown = ({ source, isChatting = false }: { source: string; isChatting?:
       className={`markdown ${styles.markdown}
       ${isChatting ? `${formatSource ? styles.waitingAnimation : styles.animation}` : ''}
     `}
-      remarkPlugins={[RemarkGfm, RemarkMath, RemarkBreaks]}
+      remarkPlugins={[RemarkMath, RemarkGfm, RemarkBreaks]}
       rehypePlugins={[RehypeKatex]}
-      // @ts-ignore
       components={components}
       linkTarget={'_blank'}
     >

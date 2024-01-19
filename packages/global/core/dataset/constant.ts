@@ -1,5 +1,3 @@
-export const PgDatasetTableName = 'modeldata';
-
 /* ------------ dataset -------------- */
 export enum DatasetTypeEnum {
   folder = 'folder',
@@ -55,23 +53,20 @@ export const DatasetCollectionTypeMap = {
     name: 'core.dataset.link'
   },
   [DatasetCollectionTypeEnum.virtual]: {
-    name: 'core.dataset.Virtual File'
+    name: 'core.dataset.Manual collection'
   }
 };
-export enum DatasetCollectionTrainingModeEnum {
-  manual = 'manual',
-  chunk = 'chunk',
-  qa = 'qa'
+
+export enum DatasetCollectionSyncResultEnum {
+  sameRaw = 'sameRaw',
+  success = 'success'
 }
-export const DatasetCollectionTrainingTypeMap = {
-  [DatasetCollectionTrainingModeEnum.manual]: {
-    label: 'core.dataset.collection.training.type manual'
+export const DatasetCollectionSyncResultMap = {
+  [DatasetCollectionSyncResultEnum.sameRaw]: {
+    label: 'core.dataset.collection.sync.result.sameRaw'
   },
-  [DatasetCollectionTrainingModeEnum.chunk]: {
-    label: 'core.dataset.collection.training.type chunk'
-  },
-  [DatasetCollectionTrainingModeEnum.qa]: {
-    label: 'core.dataset.collection.training.type qa'
+  [DatasetCollectionSyncResultEnum.success]: {
+    label: 'core.dataset.collection.sync.result.success'
   }
 };
 
@@ -119,8 +114,8 @@ export const TrainingTypeMap = {
 /* ------------ search -------------- */
 export enum DatasetSearchModeEnum {
   embedding = 'embedding',
-  embeddingReRank = 'embeddingReRank',
-  embFullTextReRank = 'embFullTextReRank'
+  fullTextRecall = 'fullTextRecall',
+  mixedRecall = 'mixedRecall'
 }
 
 export const DatasetSearchModeMap = {
@@ -130,17 +125,46 @@ export const DatasetSearchModeMap = {
     desc: 'core.dataset.search.mode.embedding desc',
     value: DatasetSearchModeEnum.embedding
   },
-  [DatasetSearchModeEnum.embeddingReRank]: {
-    icon: 'core/dataset/modeEmbeddingRerank',
-    title: 'core.dataset.search.mode.embeddingReRank',
-    desc: 'core.dataset.search.mode.embeddingReRank desc',
-    value: DatasetSearchModeEnum.embeddingReRank
+  [DatasetSearchModeEnum.fullTextRecall]: {
+    icon: 'core/dataset/fullTextRecall',
+    title: 'core.dataset.search.mode.fullTextRecall',
+    desc: 'core.dataset.search.mode.fullTextRecall desc',
+    value: DatasetSearchModeEnum.fullTextRecall
   },
-  [DatasetSearchModeEnum.embFullTextReRank]: {
-    icon: 'core/dataset/modeEmbFTRerank',
-    title: 'core.dataset.search.mode.embFullTextReRank',
-    desc: 'core.dataset.search.mode.embFullTextReRank desc',
-    value: DatasetSearchModeEnum.embFullTextReRank
+  [DatasetSearchModeEnum.mixedRecall]: {
+    icon: 'core/dataset/mixedRecall',
+    title: 'core.dataset.search.mode.mixedRecall',
+    desc: 'core.dataset.search.mode.mixedRecall desc',
+    value: DatasetSearchModeEnum.mixedRecall
+  }
+};
+
+export enum SearchScoreTypeEnum {
+  embedding = 'embedding',
+  fullText = 'fullText',
+  reRank = 'reRank',
+  rrf = 'rrf'
+}
+export const SearchScoreTypeMap = {
+  [SearchScoreTypeEnum.embedding]: {
+    label: 'core.dataset.search.score.embedding',
+    desc: 'core.dataset.search.score.embedding desc',
+    showScore: true
+  },
+  [SearchScoreTypeEnum.fullText]: {
+    label: 'core.dataset.search.score.fullText',
+    desc: 'core.dataset.search.score.fullText desc',
+    showScore: false
+  },
+  [SearchScoreTypeEnum.reRank]: {
+    label: 'core.dataset.search.score.reRank',
+    desc: 'core.dataset.search.score.reRank desc',
+    showScore: true
+  },
+  [SearchScoreTypeEnum.rrf]: {
+    label: 'core.dataset.search.score.rrf',
+    desc: 'core.dataset.search.score.rrf desc',
+    showScore: false
   }
 };
 

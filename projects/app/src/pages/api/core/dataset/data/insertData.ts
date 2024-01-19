@@ -16,6 +16,7 @@ import { authTeamBalance } from '@/service/support/permission/auth/bill';
 import { pushGenerateVectorBill } from '@/service/support/wallet/bill/push';
 import { InsertOneDatasetDataProps } from '@/global/core/dataset/api';
 import { simpleText } from '@fastgpt/global/common/string/tools';
+import { checkDatasetLimit } from '@fastgpt/service/support/permission/limit/dataset';
 
 export default withNextCors(async function handler(req: NextApiRequest, res: NextApiResponse<any>) {
   try {
@@ -37,6 +38,12 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
       authApiKey: true,
       collectionId,
       per: 'w'
+    });
+
+    await checkDatasetLimit({
+      teamId,
+      freeSize: global.feConfigs?.subscription?.datasetStoreFreeSize,
+      insertLen: 1
     });
 
     // auth collection and get dataset
@@ -69,7 +76,7 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
       a: formatA
     });
 
-    const { insertId, tokenLen } = await insertData2Dataset({
+    const { insertId, tokens } = await insertData2Dataset({
       teamId,
       tmbId,
       datasetId,
@@ -84,7 +91,7 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
     pushGenerateVectorBill({
       teamId,
       tmbId,
-      tokenLen: tokenLen,
+      tokens,
       model: vectorModelData.model
     });
 

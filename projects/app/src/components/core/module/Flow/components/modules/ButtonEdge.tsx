@@ -1,13 +1,10 @@
 import React from 'react';
-import { SmoothStepEdge, EdgeLabelRenderer, EdgeProps, getSmoothStepPath } from 'reactflow';
+import { BezierEdge, getBezierPath, EdgeLabelRenderer, EdgeProps } from 'reactflow';
+import { onDelConnect } from '../../FlowProvider';
 import { Flex } from '@chakra-ui/react';
-import MyIcon from '@/components/Icon';
+import MyIcon from '@fastgpt/web/components/common/Icon';
 
-const ButtonEdge = (
-  props: EdgeProps<{
-    onDelete: (id: string) => void;
-  }>
-) => {
+const ButtonEdge = (props: EdgeProps) => {
   const {
     id,
     sourceX,
@@ -16,12 +13,11 @@ const ButtonEdge = (
     targetY,
     sourcePosition,
     targetPosition,
-    data,
     selected,
     style = {}
   } = props;
 
-  const [edgePath, labelX, labelY] = getSmoothStepPath({
+  const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
     sourcePosition,
@@ -42,7 +38,7 @@ const ButtonEdge = (
 
   return (
     <>
-      <SmoothStepEdge {...props} style={edgeStyle} />
+      <BezierEdge {...props} style={edgeStyle} />
       <EdgeLabelRenderer>
         <Flex
           alignItems={'center'}
@@ -61,12 +57,12 @@ const ButtonEdge = (
           _hover={{
             boxShadow: '0 0 6px 2px rgba(0, 0, 0, 0.08)'
           }}
-          onClick={() => data?.onDelete(id)}
+          onClick={() => onDelConnect(id)}
         >
           <MyIcon
             name="closeSolid"
             w={'100%'}
-            color={selected ? 'blue.700' : 'myGray.500'}
+            color={selected ? 'primary.700' : 'myGray.500'}
           ></MyIcon>
         </Flex>
       </EdgeLabelRenderer>

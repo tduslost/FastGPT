@@ -1,7 +1,4 @@
-import {
-  DatasetCollectionTrainingModeEnum,
-  DatasetCollectionTypeEnum
-} from '@fastgpt/global/core/dataset/constant';
+import { TrainingModeEnum, DatasetCollectionTypeEnum } from '@fastgpt/global/core/dataset/constant';
 import type { CreateDatasetCollectionParams } from '@fastgpt/global/core/dataset/api.d';
 import { MongoDatasetCollection } from './schema';
 
@@ -12,26 +9,38 @@ export async function createOneCollection({
   parentId,
   datasetId,
   type,
-  trainingType = DatasetCollectionTrainingModeEnum.manual,
+
+  trainingType = TrainingModeEnum.chunk,
   chunkSize = 0,
+  chunkSplitter,
+  qaPrompt,
+
   fileId,
   rawLink,
-  qaPrompt,
+
   hashRawText,
-  metadata = {}
-}: CreateDatasetCollectionParams & { teamId: string; tmbId: string }) {
+  rawTextLength,
+  metadata = {},
+  ...props
+}: CreateDatasetCollectionParams & { teamId: string; tmbId: string; [key: string]: any }) {
   const { _id } = await MongoDatasetCollection.create({
-    name,
+    ...props,
     teamId,
     tmbId,
-    datasetId,
     parentId: parentId || null,
+    datasetId,
+    name,
     type,
+
     trainingType,
     chunkSize,
+    chunkSplitter,
+    qaPrompt,
+
     fileId,
     rawLink,
-    qaPrompt,
+
+    rawTextLength,
     hashRawText,
     metadata
   });
@@ -70,7 +79,7 @@ export function createDefaultCollection({
     datasetId,
     parentId,
     type: DatasetCollectionTypeEnum.virtual,
-    trainingType: DatasetCollectionTrainingModeEnum.manual,
+    trainingType: TrainingModeEnum.chunk,
     chunkSize: 0,
     updateTime: new Date('2099')
   });
@@ -84,6 +93,8 @@ export const getSameRawTextCollection = async ({
   datasetId: string;
   hashRawText?: string;
 }) => {
+  if (!hashRawText) return undefined;
+
   const collection = await MongoDatasetCollection.findOne({
     datasetId,
     hashRawText

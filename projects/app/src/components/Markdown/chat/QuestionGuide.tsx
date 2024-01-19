@@ -5,7 +5,7 @@ import ChatBoxDivider from '@/components/core/chat/Divider';
 import { useTranslation } from 'next-i18next';
 import { EventNameEnum, eventBus } from '@/web/common/utils/eventbus';
 import MyTooltip from '@/components/MyTooltip';
-import MyIcon from '@/components/Icon';
+import MyIcon from '@fastgpt/web/components/common/Icon';
 
 const QuestionGuide = ({ text }: { text: string }) => {
   const theme = useTheme();
@@ -24,7 +24,7 @@ const QuestionGuide = ({ text }: { text: string }) => {
 
   return questionGuides.length > 0 ? (
     <Box mt={2}>
-      <ChatBoxDivider icon="core/chat/QGFill" text={t('chat.Question Guide Tips')} />
+      <ChatBoxDivider icon="core/chat/QGFill" text={t('core.chat.Question Guide Tips')} />
       <Flex alignItems={'center'} flexWrap={'wrap'} gap={2}>
         {questionGuides.map((text) => (
           <Flex
@@ -77,7 +77,7 @@ const QuestionGuide = ({ text }: { text: string }) => {
                   name={'core/chat/sendLight'}
                   w={'14px'}
                   cursor={'pointer'}
-                  _hover={{ color: 'blue.500' }}
+                  _hover={{ color: 'primary.500' }}
                   onClick={() => eventBus.emit(EventNameEnum.sendQuestion, { text })}
                 />
               </MyTooltip>

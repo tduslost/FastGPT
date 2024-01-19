@@ -79,6 +79,10 @@ const TrainingDataSchema = new Schema({
     type: Number,
     default: 0
   },
+  weight: {
+    type: Number,
+    default: 0
+  },
   indexes: {
     type: [
       {
@@ -98,6 +102,8 @@ const TrainingDataSchema = new Schema({
 });
 
 try {
+  TrainingDataSchema.index({ teamId: 1 });
+  TrainingDataSchema.index({ weight: -1 });
   TrainingDataSchema.index({ lockTime: 1 });
   TrainingDataSchema.index({ datasetId: 1 });
   TrainingDataSchema.index({ collectionId: 1 });

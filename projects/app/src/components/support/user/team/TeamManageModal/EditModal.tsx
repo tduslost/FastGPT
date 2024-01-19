@@ -12,6 +12,7 @@ import MyTooltip from '@/components/MyTooltip';
 import Avatar from '@/components/Avatar';
 import { postCreateTeam, putUpdateTeam } from '@/web/support/user/team/api';
 import { CreateTeamProps } from '@fastgpt/global/support/user/team/controller.d';
+import { MongoImageTypeEnum } from '@fastgpt/global/common/file/image/constants';
 
 export type FormDataType = CreateTeamProps & {
   id?: string;
@@ -50,6 +51,7 @@ function EditModal({
       if (!file) return;
       try {
         const src = await compressImgFileAndUpload({
+          type: MongoImageTypeEnum.teamAvatar,
           file,
           maxW: 300,
           maxH: 300
@@ -135,7 +137,7 @@ function EditModal({
         {!!defaultData.id ? (
           <>
             <Box flex={1} />
-            <Button variant={'base'} mr={3} onClick={onClose}>
+            <Button variant={'whiteBase'} mr={3} onClick={onClose}>
               {t('common.Close')}
             </Button>
             <Button isLoading={updating} onClick={handleSubmit((data) => onclickUpdate(data))}>

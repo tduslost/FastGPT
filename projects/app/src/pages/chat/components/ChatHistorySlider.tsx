@@ -15,7 +15,7 @@ import { useEditTitle } from '@/web/common/hooks/useEditTitle';
 import { useRouter } from 'next/router';
 import Avatar from '@/components/Avatar';
 import MyTooltip from '@/components/MyTooltip';
-import MyIcon from '@/components/Icon';
+import MyIcon from '@fastgpt/web/components/common/Icon';
 import { useTranslation } from 'next-i18next';
 import { useConfirm } from '@/web/common/hooks/useConfirm';
 import Tabs from '@/components/Tabs';
@@ -74,18 +74,20 @@ const ChatHistorySlider = ({
 
   // custom title edit
   const { onOpenModal, EditModal: EditTitleModal } = useEditTitle({
-    title: '自定义历史记录标题',
-    placeholder: '如果设置为空，会自动跟随聊天记录。'
+    title: t('core.chat.Custom History Title'),
+    placeholder: t('core.chat.Custom History Title Description')
   });
   const { openConfirm, ConfirmModal } = useConfirm({
     content: isShare
-      ? t('chat.Confirm to clear share chat history')
-      : t('chat.Confirm to clear history')
+      ? t('core.chat.Confirm to clear share chat history')
+      : t('core.chat.Confirm to clear history')
   });
 
   const concatHistory = useMemo<HistoryItemType[]>(
     () =>
-      !activeChatId ? [{ id: activeChatId, title: t('chat.New Chat') }].concat(history) : history,
+      !activeChatId
+        ? [{ id: activeChatId, title: t('core.chat.New Chat') }].concat(history)
+        : history,
     [activeChatId, history, t]
   );
 
@@ -144,35 +146,36 @@ const ChatHistorySlider = ({
             mr={2}
             list={[
               { label: 'App', id: TabEnum.app },
-              { label: 'chat.History', id: TabEnum.history }
+              { label: t('core.chat.History'), id: TabEnum.history }
             ]}
             activeId={currentTab}
             onChange={(e) => setCurrentTab(e as `${TabEnum}`)}
           />
         )}
         <Button
-          variant={'base'}
+          variant={'whitePrimary'}
           flex={1}
           h={'100%'}
-          color={'blue.600'}
+          color={'primary.600'}
           borderRadius={'xl'}
-          leftIcon={<MyIcon name={'chat'} w={'16px'} />}
+          leftIcon={<MyIcon name={'core/chat/chatLight'} w={'16px'} />}
           overflow={'hidden'}
           onClick={() => onChangeChat()}
         >
-          {t('chat.New Chat')}
+          {t('core.chat.New Chat')}
         </Button>
 
         {(isPc || isShare) && (
           <IconButton
             ml={3}
             h={'100%'}
-            variant={'base'}
+            variant={'whiteDanger'}
+            size={'mdSquare'}
             aria-label={''}
-            borderRadius={'xl'}
+            borderRadius={'50%'}
             onClick={openConfirm(onClearHistory)}
           >
-            <MyIcon name={'clear'} w={'16px'} />
+            <MyIcon name={'common/clearLight'} w={'16px'} />
           </IconButton>
         )}
       </Flex>
@@ -190,7 +193,7 @@ const ChatHistorySlider = ({
                 px={4}
                 cursor={'pointer'}
                 userSelect={'none'}
-                borderRadius={'lg'}
+                borderRadius={'md'}
                 mb={2}
                 _hover={{
                   bg: 'myGray.100',
@@ -201,8 +204,8 @@ const ChatHistorySlider = ({
                 bg={item.top ? '#E6F6F6 !important' : ''}
                 {...(item.id === activeChatId
                   ? {
-                      backgroundColor: 'blue.50 !important',
-                      color: 'blue.600'
+                      backgroundColor: 'primary.50 !important',
+                      color: 'primary.600'
                     }
                   : {
                       onClick: () => {
@@ -210,7 +213,10 @@ const ChatHistorySlider = ({
                       }
                     })}
               >
-                <MyIcon name={item.id === activeChatId ? 'chatFill' : 'chat'} w={'16px'} />
+                <MyIcon
+                  name={item.id === activeChatId ? 'core/chat/chatFill' : 'core/chat/chatLight'}
+                  w={'16px'}
+                />
                 <Box flex={'1 0 0'} ml={3} className="textEllipsis">
                   {item.customTitle || item.title}
                 </Box>
@@ -235,8 +241,8 @@ const ChatHistorySlider = ({
                               onSetHistoryTop({ chatId: item.id, top: !item.top });
                             }}
                           >
-                            <MyIcon mr={2} name={'setTop'} w={'16px'}></MyIcon>
-                            {item.top ? '取消置顶' : '置顶'}
+                            <MyIcon mr={2} name={'core/chat/setTopLight'} w={'16px'}></MyIcon>
+                            {item.top ? t('core.chat.Unpin') : t('core.chat.Pin')}
                           </MenuItem>
                         )}
                         {onSetCustomTitle && (
@@ -253,7 +259,7 @@ const ChatHistorySlider = ({
                               });
                             }}
                           >
-                            <MyIcon mr={2} name={'customTitle'} w={'16px'}></MyIcon>
+                            <MyIcon mr={2} name={'common/customTitleLight'} w={'16px'}></MyIcon>
                             {t('common.Custom Title')}
                           </MenuItem>
                         )}
@@ -268,7 +274,7 @@ const ChatHistorySlider = ({
                           }}
                         >
                           <MyIcon mr={2} name={'delete'} w={'16px'}></MyIcon>
-                          删除
+                          {t('common.Delete')}
                         </MenuItem>
                       </MenuList>
                     </Menu>
@@ -286,12 +292,12 @@ const ChatHistorySlider = ({
                 py={2}
                 px={3}
                 mb={3}
-                borderRadius={'lg'}
+                borderRadius={'md'}
                 alignItems={'center'}
                 {...(item._id === appId
                   ? {
-                      backgroundColor: 'blue.50 !important',
-                      color: 'blue.600'
+                      backgroundColor: 'primary.50 !important',
+                      color: 'primary.600'
                     }
                   : {
                       onClick: () => {
@@ -325,15 +331,14 @@ const ChatHistorySlider = ({
         >
           <IconButton
             mr={3}
-            icon={<MyIcon name={'backFill'} w={'18px'} color={'blue.500'} />}
+            icon={<MyIcon name={'common/backFill'} w={'18px'} color={'primary.500'} />}
             bg={'white'}
             boxShadow={'1px 1px 9px rgba(0,0,0,0.15)'}
-            h={'28px'}
-            size={'sm'}
+            size={'smSquare'}
             borderRadius={'50%'}
             aria-label={''}
           />
-          {t('chat.Exit Chat')}
+          {t('core.chat.Exit Chat')}
         </Flex>
       )}
       <EditTitleModal />

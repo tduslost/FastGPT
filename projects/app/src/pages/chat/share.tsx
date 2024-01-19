@@ -88,7 +88,7 @@ const OutLink = ({
       const newTitle =
         chatContentReplaceBlock(prompts[0].content).slice(0, 20) ||
         prompts[1]?.value?.slice(0, 20) ||
-        '新对话';
+        t('core.chat.New Chat');
 
       // new chat
       if (completionChatId !== chatId) {
@@ -258,11 +258,21 @@ const OutLink = ({
   }, [clearLocalHistory, localUId, router, shareChatHistory, shareId, t, toast]);
 
   return (
-    <PageContainer {...(isEmbed ? { p: '0 !important', borderRadius: '0' } : {})}>
+    <PageContainer
+      {...(isEmbed
+        ? { p: '0 !important', insertProps: { borderRadius: '0', boxShadow: 'none' } }
+        : { p: [0, 5] })}
+    >
       <Head>
         <title>{chatData.app.name}</title>
       </Head>
-      <MyBox isLoading={isFetching} h={'100%'} display={'flex'} flexDirection={['column', 'row']}>
+      <MyBox
+        isLoading={isFetching}
+        h={'100%'}
+        display={'flex'}
+        flexDirection={['column', 'row']}
+        bg={'white'}
+      >
         {showHistory === '1'
           ? ((children: React.ReactNode) => {
               return isPc ? (

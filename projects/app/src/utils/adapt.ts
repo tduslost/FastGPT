@@ -3,10 +3,11 @@ import type { ChatMessageItemType } from '@fastgpt/global/core/ai/type.d';
 import type { ModuleItemType, FlowModuleItemType } from '@fastgpt/global/core/module/type.d';
 import type { Edge, Node } from 'reactflow';
 import { customAlphabet } from 'nanoid';
-import { EmptyModule } from '@fastgpt/global/core/module/template/system/empty';
 import { moduleTemplatesFlat } from '@/web/core/modules/template/system';
 import { adaptRole_Message2Chat } from '@fastgpt/global/core/chat/adapt';
 import { EDGE_TYPE } from '@fastgpt/global/core/module/node/constant';
+import { UserInputModule } from '@fastgpt/global/core/module/template/system/userInput';
+import { ChatCompletionRequestMessageRoleEnum } from '@fastgpt/global/core/ai/constant';
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz1234567890', 6);
 
 export const gptMessage2ChatType = (messages: ChatMessageItemType[]): ChatItemType[] => {
@@ -34,7 +35,16 @@ export const textAdaptGptResponse = ({
     object: '',
     created: 0,
     model,
-    choices: [{ delta: text === null ? {} : { content: text }, index: 0, finish_reason }]
+    choices: [
+      {
+        delta:
+          text === null
+            ? {}
+            : { role: ChatCompletionRequestMessageRoleEnum.Assistant, content: text },
+        index: 0,
+        finish_reason
+      }
+    ]
   });
 };
 
@@ -45,7 +55,7 @@ export const appModule2FlowNode = ({
 }): Node<FlowModuleItemType> => {
   // init some static data
   const template =
-    moduleTemplatesFlat.find((template) => template.flowType === item.flowType) || EmptyModule;
+    moduleTemplatesFlat.find((template) => template.flowType === item.flowType) || UserInputModule;
 
   const concatInputs = template.inputs.concat(
     item.inputs.filter(
@@ -88,13 +98,7 @@ export const appModule2FlowNode = ({
     position: item.position || { x: 0, y: 0 }
   };
 };
-export const appModule2FlowEdge = ({
-  modules,
-  onDelete
-}: {
-  modules: ModuleItemType[];
-  onDelete: (id: string) => void;
-}) => {
+export const appModule2FlowEdge = ({ modules }: { modules: ModuleItemType[] }) => {
   const edges: Edge[] = [];
   modules.forEach((module) =>
     module.outputs.forEach((output) =>
@@ -105,8 +109,7 @@ export const appModule2FlowEdge = ({
           sourceHandle: output.key,
           targetHandle: target.key,
           id: nanoid(),
-          type: EDGE_TYPE,
-          data: { onDelete }
+          type: EDGE_TYPE
         });
       })
     )

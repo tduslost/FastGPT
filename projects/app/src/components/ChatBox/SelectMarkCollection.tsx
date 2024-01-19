@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ModalBody, useTheme, ModalFooter, Button, Box, Card, Flex, Grid } from '@chakra-ui/react';
 import { useTranslation } from 'next-i18next';
 import Avatar from '../Avatar';
-import MyIcon from '@/components/Icon';
+import MyIcon from '@fastgpt/web/components/common/Icon';
 import { DatasetTypeEnum } from '@fastgpt/global/core/dataset/constant';
 import DatasetSelectModal, { useDatasetSelect } from '@/components/core/dataset/SelectModal';
 import dynamic from 'next/dynamic';
@@ -46,7 +46,7 @@ const SelectMarkCollection = ({
           paths={paths}
           onClose={onClose}
           setParentId={setParentId}
-          tips={t('chat.Select Mark Kb Desc')}
+          tips={t('core.chat.Select Mark Kb Desc')}
         >
           <ModalBody flex={'1 0 0'} overflowY={'auto'}>
             <Grid
@@ -70,7 +70,7 @@ const SelectMarkCollection = ({
                       }}
                       {...(selected
                         ? {
-                            bg: 'blue.200'
+                            bg: 'primary.200'
                           }
                         : {})}
                       onClick={() => {
@@ -132,7 +132,7 @@ const SelectMarkCollection = ({
           CustomFooter={
             <ModalFooter>
               <Button
-                variant={'base'}
+                variant={'whiteBase'}
                 mr={2}
                 onClick={() => {
                   setAdminMarkData({
@@ -164,19 +164,23 @@ const SelectMarkCollection = ({
         <InputDataModal
           onClose={onClose}
           collectionId={adminMarkData.collectionId}
+          dataId={adminMarkData.dataId}
           defaultValue={{
-            id: adminMarkData.dataId,
             q: adminMarkData.q,
-            a: adminMarkData.a,
-            indexes: [getDefaultIndex({ dataId: `${Date.now()}` })]
+            a: adminMarkData.a
           }}
           onSuccess={(data) => {
-            if (!data.q || !adminMarkData.datasetId || !adminMarkData.collectionId || !data.id) {
+            if (
+              !data.q ||
+              !adminMarkData.datasetId ||
+              !adminMarkData.collectionId ||
+              !data.dataId
+            ) {
               return onClose();
             }
 
             onSuccess({
-              dataId: data.id,
+              dataId: data.dataId,
               datasetId: adminMarkData.datasetId,
               collectionId: adminMarkData.collectionId,
               q: data.q,

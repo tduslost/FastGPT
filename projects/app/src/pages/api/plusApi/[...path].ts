@@ -2,8 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { jsonRes } from '@fastgpt/service/common/response';
 import { request } from '@fastgpt/service/common/api/plusRequest';
 import type { Method } from 'axios';
-import { connectToDatabase } from '@/service/mongo';
 import { setCookie } from '@fastgpt/service/support/permission/controller';
+import { connectToDatabase } from '@/service/mongo';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {

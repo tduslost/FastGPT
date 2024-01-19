@@ -1,6 +1,8 @@
 import { postUploadImg, postUploadFiles } from '@/web/common/file/api';
 import { UploadImgProps } from '@fastgpt/global/common/file/api';
 import { BucketNameEnum } from '@fastgpt/global/common/file/constants';
+import { preUploadImgProps } from '@fastgpt/global/common/file/api';
+import { compressBase64Img, type CompressImgProps } from '@fastgpt/web/common/file/img';
 
 /**
  * upload file to mongo gridfs
@@ -30,93 +32,45 @@ export const uploadFiles = ({
   });
 };
 
+export const getUploadBase64ImgController = (props: CompressImgProps & UploadImgProps) =>
+  compressBase64Img({
+    maxW: 4000,
+    maxH: 4000,
+    maxSize: 1024 * 1024 * 5,
+    ...props
+  });
+
 /**
  * compress image. response base64
  * @param maxSize The max size of the compressed image
  */
-export const compressBase64ImgAndUpload = ({
+export const compressBase64ImgAndUpload = async ({
   base64Img,
-  maxW = 1080,
-  maxH = 1080,
-  maxSize = 1024 * 500, // 300kb
-  expiredTime,
-  metadata,
-  shareId
-}: UploadImgProps & {
-  maxW?: number;
-  maxH?: number;
-  maxSize?: number;
-}) => {
-  return new Promise<string>((resolve, reject) => {
-    const fileType =
-      /^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,/.exec(base64Img)?.[1] || 'image/jpeg';
-
-    const img = new Image();
-    img.src = base64Img;
-    img.onload = async () => {
-      let width = img.width;
-      let height = img.height;
-
-      if (width > height) {
-        if (width > maxW) {
-          height *= maxW / width;
-          width = maxW;
-        }
-      } else {
-        if (height > maxH) {
-          width *= maxH / height;
-          height = maxH;
-        }
-      }
-
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-
-      if (!ctx) {
-        return reject('压缩图片异常');
-      }
-
-      ctx.drawImage(img, 0, 0, width, height);
-      const compressedDataUrl = canvas.toDataURL(fileType, 1);
-      // 移除 canvas 元素
-      canvas.remove();
-
-      if (compressedDataUrl.length > maxSize) {
-        return reject('图片太大了');
-      }
-
-      try {
-        const src = await postUploadImg({
-          shareId,
-          base64Img: compressedDataUrl,
-          expiredTime,
-          metadata
-        });
-        resolve(src);
-      } catch (error) {
-        reject(error);
-      }
-    };
-    img.onerror = reject;
-  });
-};
-export const compressImgFileAndUpload = async ({
-  file,
   maxW,
   maxH,
   maxSize,
-  expiredTime,
-  shareId
-}: {
-  file: File;
-  maxW?: number;
-  maxH?: number;
-  maxSize?: number;
-  expiredTime?: Date;
-  shareId?: string;
-}) => {
+  ...props
+}: UploadImgProps & CompressImgProps) => {
+  const compressUrl = await compressBase64Img({
+    base64Img,
+    maxW,
+    maxH,
+    maxSize
+  });
+
+  return postUploadImg({
+    ...props,
+    base64Img: compressUrl
+  });
+};
+
+export const compressImgFileAndUpload = async ({
+  file,
+  ...props
+}: preUploadImgProps &
+  CompressImgProps & {
+    file: File;
+  }) => {
   const reader = new FileReader();
   reader.readAsDataURL(file);
 
@@ -126,16 +80,12 @@ export const compressImgFileAndUpload = async ({
     };
     reader.onerror = (err) => {
       console.log(err);
-      reject('压缩图片异常');
+      reject('Load image error');
     };
   });
 
   return compressBase64ImgAndUpload({
     base64Img,
-    maxW,
-    maxH,
-    maxSize,
-    expiredTime,
-    shareId
+    ...props
   });
 };

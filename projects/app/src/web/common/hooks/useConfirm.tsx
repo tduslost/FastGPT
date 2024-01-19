@@ -94,7 +94,7 @@ export const useConfirm = (props?: {
             <ModalFooter>
               {showCancel && (
                 <Button
-                  variant={'base'}
+                  variant={'whiteBase'}
                   onClick={() => {
                     onClose();
                     typeof cancelCb.current === 'function' && cancelCb.current();
@@ -105,7 +105,7 @@ export const useConfirm = (props?: {
               )}
 
               <Button
-                {...(bg && { bg: `${bg} !important` })}
+                bg={bg ? bg : map.bg}
                 isDisabled={countDownAmount > 0}
                 ml={4}
                 isLoading={isLoading}
@@ -120,7 +120,7 @@ export const useConfirm = (props?: {
           </MyModal>
         );
       },
-      [customContent, iconSrc, isOpen, onClose, showCancel, t, title]
+      [customContent, iconSrc, isOpen, map.bg, onClose, showCancel, t, title]
     )
   };
 };
